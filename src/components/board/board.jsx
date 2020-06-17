@@ -1,10 +1,10 @@
-import React from 'react';
+import React, {useState} from 'react';
 
 import Square from '../Square/square';
 import Piece from '../piece/piece';
 
 function calculateWinner(squares) {
-    console.log(squares)
+    // console.log(squares)
     const lines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -24,73 +24,67 @@ function calculateWinner(squares) {
     return null;
   }
 
-class Board extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = this.restartState();
+function Board(props) {
+    const [squares, setSquares] = useState(Array(9).fill(null));
+    const [xIsNext, setXIsNext] = useState(true);
+    const [displayBoard, setDisplayBoard] = useState(false);
+    const [xChoosenPiece, setXChoosenPiece] = useState('X');
+    const [oChoosenPiece, setOChoosenPiece] = useState('O');
+    const [status, setStatus] = useState('')
+
+    const resetState = () => {
+        setSquares(Array(9).fill(null));
+        setXIsNext(true);
+        setDisplayBoard(false);
+        setXChoosenPiece('X');
+        setXChoosenPiece('O');
+    };
+
+    const newGame = () => {
+        resetState()
     }
 
-    restartState () {
-        return {
-            squares: Array(9).fill(null),
-            xIsNext: true,
-            displayBoard: false,
-            xChoosenPiece: 'X',
-            oChoosenPiece: 'O'
-        };
-    }
-    newGame() {
-        this.setState(this.restartState())
-    
-    }
-
-    handleClick(i) {
-        const squares = this.state.squares.slice();
+    const handleClick = (i) => {
+        const currentSquares = squares.slice();
         if (calculateWinner(squares) || squares[i]) {
             return;
         }
-        squares[i] = this.state.xIsNext ? this.state.xChoosenPiece : this.state.oChoosenPiece ;
-        this.setState({
-            squares: squares,
-            xIsNext: false,
-
-        });
+        currentSquares[i] = xIsNext ? xChoosenPiece : oChoosenPiece ;
+        console.log(currentSquares)
+        setSquares(currentSquares);
+        setXIsNext(false);
+        
 
         const winner = calculateWinner(squares);
-
-        
       
         if (winner) {
-            this.setState ({ status : 'Winnner: ' + winner })
+            setStatus('Winnner: ' + winner)
         } else {
-            this.setState ({ status : 'Next player: O' })
+            setStatus('Next player: O')
         }
 
-        if (this.state.xIsNext) {
+        if (xIsNext) {
             setTimeout(() => {   
                 if (!winner) {
-                    this.computerMove();
+                    computerMove(currentSquares);
                 } 
               }, 500);  
         }
- 
     }
 
-    handleEmojiClick(emoji) {
+    const handleEmojiClick = (emoji) => {
         return (
-        this.setState({
-            xChoosenPiece : emoji,
-           
-            displayBoard : true,
-        })
-
-       
-    )
-    
+            setXChoosenPiece(emoji),
+            setDisplayBoard(true)
+        )
     }
-    computerMove() {
+
+    const computerMove = (latestSquares) => {
         let hasComputerPlayed = false;
-        const nextSquares = this.state.squares.map((square) => {
+
+        // console.log(squares)
+
+        const nextSquares = latestSquares.map((square) => {
             if (square === null && hasComputerPlayed === false) {
                 hasComputerPlayed = true;
                 return "O";
@@ -98,48 +92,48 @@ class Board extends React.Component {
             return square;
         });
 
-        
-        return this.setState({
-            squares: nextSquares,
-            xIsNext: true,
-            status : 'Next player: ' + (this.state.xChoosenPiece)
-        })
+        // console.log(nextSquares)
 
+        return (
+            setSquares(nextSquares),
+            setXIsNext(true),
+            setStatus('Next player: ' + xChoosenPiece)
+        )
     }
 
-    renderSquare(i) {
+    const renderSquare = (i) => {
         return (
             <Square 
-                value={this.state.squares[i]}
-                onClick={() => this.handleClick(i)}
+                value={squares[i]}
+                onClick={() => handleClick(i)}
             />
         );
     }
 
-    renderBoard() {
+    const renderBoard = () => {
         return (
             <div >
                  <div className="newGame"> 
-                    <button className="newGameButton"  onClick={() => this.newGame()}>
+                    <button className="newGameButton"  onClick={() => newGame()}>
                        New Game
                     </button>
                 </div>
-                <div className="status">{this.state.status} </div>
+                <div className="status">{status} </div>
                 <div className= "board">
                 <div className="board-row">
-                    {this.renderSquare(0)} 
-                    {this.renderSquare(1)} 
-                    {this.renderSquare(2)} 
+                    {renderSquare(0)} 
+                    {renderSquare(1)} 
+                    {renderSquare(2)} 
                 </div>
                 <div className="board-row">
-                    {this.renderSquare(3)} 
-                    {this.renderSquare(4)} 
-                    {this.renderSquare(5)} 
+                    {renderSquare(3)} 
+                    {renderSquare(4)} 
+                    {renderSquare(5)} 
                 </div>
                 <div className="board-row">
-                    {this.renderSquare(6)} 
-                    {this.renderSquare(7)} 
-                    {this.renderSquare(8)} 
+                    {renderSquare(6)} 
+                    {renderSquare(7)} 
+                    {renderSquare(8)} 
                 </div>
                 </div>
                 <div>
@@ -148,45 +142,41 @@ class Board extends React.Component {
             </div>
         )
     }
-
     
-    renderPiece(emoji) {
+   const renderPiece = (emoji) => {
         return (
             <Piece 
                 label= {emoji}
-                onClick={() => this.handleEmojiClick(emoji)}
+                onClick={() => handleEmojiClick(emoji)}
                 
             />
         
         );
     }
-    changeColor() {
+    const changeColor = () => {
 
     }
 
-    render() {
         return (
 
             <div>
                 <div>
                     <div> Player 1: Choose your Game Piece </div>
                     <div className="availablePieces">
-                        {this.renderPiece('🎃')} 
-                        {this.renderPiece('😃')} 
-                        {this.renderPiece('😇')} 
-                        {this.renderPiece('😍')} 
-                        {this.renderPiece('👿')} 
+                        {renderPiece('🎃')} 
+                        {renderPiece('😃')} 
+                        {renderPiece('😇')} 
+                        {renderPiece('😍')} 
+                        {renderPiece('👿')} 
                     </div>
                 </div>
                 <div> 
     
                 </div>
-                {this.state.displayBoard && this.renderBoard()}
-                
-                
+                {displayBoard && renderBoard()}
             </div>
         );
     }
-}
+
 
 export default Board;

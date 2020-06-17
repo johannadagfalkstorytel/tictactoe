@@ -1,17 +1,13 @@
-import React from 'react';
+import React, {useState} from 'react';
 
 import Board from '../board/board'
 import ChooseGamePiece from '../Choose Game Piece/Choosegamepiece';
 
-class Game extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            choosenPiece: 'X'
-        }; 
-    }
+function Game(props) {
 
-    render() {
+
+    const [choosenPiece, setChoosenPiece] = useState('X');
+
         return (
             <div className="game">
                 <div className = "game-board">
@@ -23,7 +19,7 @@ class Game extends React.Component {
                 </div>
             </div>
         );
-    }
+    
 }
 
 export default Game;
