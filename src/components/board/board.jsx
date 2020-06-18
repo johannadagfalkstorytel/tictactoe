@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import Square from "../Square/square";
 import Piece from "../Piece/piece";
@@ -28,8 +28,10 @@ function Board(props) {
   const [xIsNext, setXIsNext] = useState(true);
   const [displayBoard, setDisplayBoard] = useState(false);
   const [xChoosenPiece, setXChoosenPiece] = useState("X");
-  const [oChoosenPiece, setOChoosenPiece] = useState("O");
+  //const [oChoosenPiece, setOChoosenPiece] = useState("O");
   const [status, setStatus] = useState("");
+  //const [currentSquares, setCurrentSquares] = useState(squares);
+  const [winner, setWinner] = useState("");
 
   const resetState = () => {
     setSquares(Array(9).fill(null));
@@ -37,22 +39,55 @@ function Board(props) {
     setDisplayBoard(false);
     setXChoosenPiece("X");
     setXChoosenPiece("O");
+    //setCurrentSquares(Array(9).fill(null));
+    setWinner("");
   };
 
   const newGame = () => {
     resetState();
   };
 
+  useEffect(() => {
+    const computerMove = (latestSquares) => {
+      let hasComputerPlayed = false;
+
+      const nextSquares = latestSquares.map((square) => {
+        if (square === null && hasComputerPlayed === false) {
+          hasComputerPlayed = true;
+          return "O";
+        }
+        return square;
+      });
+
+      return (
+        setSquares(nextSquares),
+        setXIsNext(true),
+        setStatus("Next player: " + xChoosenPiece)
+      );
+    };
+
+    if (!xIsNext) {
+      let timeout = setTimeout(() => {
+        if (!winner) {
+          computerMove(squares);
+        }
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [xIsNext, winner, squares, xChoosenPiece]);
+
   const handleClick = (i) => {
     const currentSquares = squares.slice();
+    //setCurrentSquares(squares.slice());
     if (calculateWinner(squares) || squares[i]) {
       return;
     }
-    currentSquares[i] = xIsNext ? xChoosenPiece : oChoosenPiece;
+    currentSquares[i] = xIsNext ? xChoosenPiece : "O";
     setSquares(currentSquares);
     setXIsNext(false);
 
-    const winner = calculateWinner(squares);
+    //const winner = calculateWinner(squares);
+    setWinner(calculateWinner(squares));
 
     if (winner) {
       setStatus("Winnner: " + winner);
@@ -60,35 +95,17 @@ function Board(props) {
       setStatus("Next player: O");
     }
 
-    if (xIsNext) {
+    /* if (xIsNext) {
       setTimeout(() => {
         if (!winner) {
           computerMove(currentSquares);
         }
       }, 500);
-    }
+    } */
   };
 
   const handleEmojiClick = (emoji) => {
     return setXChoosenPiece(emoji), setDisplayBoard(true);
-  };
-
-  const computerMove = (latestSquares) => {
-    let hasComputerPlayed = false;
-
-    const nextSquares = latestSquares.map((square) => {
-      if (square === null && hasComputerPlayed === false) {
-        hasComputerPlayed = true;
-        return "O";
-      }
-      return square;
-    });
-
-    return (
-      setSquares(nextSquares),
-      setXIsNext(true),
-      setStatus("Next player: " + xChoosenPiece)
-    );
   };
 
   const renderSquare = (i) => {
